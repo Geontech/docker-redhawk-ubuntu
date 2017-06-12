@@ -44,16 +44,28 @@ REST_PYTHON_BRANCH := master
 image_check = $(strip $(shell docker images -q $1))
 image_build = docker build --rm \
 		$2 \
-		-f ./Dockerfiles/$(subst geontech/redhawk-,,$1).Dockerfile \
+		-f ./Dockerfiles/$(subst $(image_prefix)-,,$1).Dockerfile \
 		-t $1:$(VERSION) \
 		./Dockerfiles \
 		&& \
 	docker tag $@:$(VERSION) $@:latest
 
-.PHONY: all clean $(all_images)
+.PHONY: all_pulled deliver clean $(all_images)
 
 # Everything
 all: $(redhawk_images) $(redhawk_webserver) $(linked_scripts) $(omni)
+
+all_pulled: $(linked_scripts)
+	$(foreach image,$(all_images),\
+		$(shell docker pull $(image):$(VERSION)) \
+		$(shell docker tag $(image):$(VERSION) $(image):latest) \
+		)
+
+deliver: $(all_images)
+	$(eval result := $(foreach image,$(all_images),\
+		$(shell docker push $(image):$(VERSION)) \
+		$(shell docker push $(image):latest))\
+		)
 
 # Image building targets
 $(base):
