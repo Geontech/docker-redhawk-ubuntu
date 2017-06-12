@@ -16,54 +16,55 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program.  If not, see http://www.gnu.org/licenses/.
 #
-
-FROM centos:7
+FROM ubuntu:16.04
 
 ENV RH_VERSION=2.0.5
 ENV OMNISERVICEIP 127.0.0.1
 
 LABEL name="REDHAWK SDR Base Image" \
     license="GPLv3" \
-    description="REDHAWK SDR repository, omni services, and EPEL)" \
+    description="REDHAWK SDR base image (omniservice libs, configuration, etc.))" \
     maintainer="Thomas Goodwin <btgoodwin@geontech.com>" \
     version="${RH_VERSION}" \
     vendor="Geon Technologies, LLC"
 
-# Add redhawk yum repo reference
-ADD files/geon-redhawk.repo /etc/yum.repos.d/geon-redhawk.repo
-
-# Update, epel, etc. as well as upgraded pyparsing
-# Then add setup supervisord directories
-RUN yum install -y \
-    curl \
-    wget \
-    epel-release \
-    http://cbs.centos.org/kojifiles/packages/pyparsing/2.0.3/1.el7/noarch/pyparsing-2.0.3-1.el7.noarch.rpm && \
-    yum -y clean all && \
-    \
-    curl https://bootstrap.pypa.io/get-pip.py | python && \
-    pip install --upgrade pip && \
-    pip install --upgrade supervisor && \
+# Install omniorb name server, pip, and supervisord, default supervisord config
+RUN apt-get update && \
+    apt-get install -qy --no-install-recommends \
+    python \
+    omniorb-nameserver \
+    omniidl \
+    omniidl-python \
+    omniorb-idl \
+    python-pip \
+    libboost-system1.58.0 \
+    libboost-thread1.58.0 \
+    && \
+    pip install --upgrade \
+        pip \
+        setuptools && \
+    pip install --upgrade \
+        supervisor && \
     mkdir -p \
         /etc/supervisor.d    \
         /etc/supervisor      \
-        /var/log/supervisord
+        /var/log/supervisord && \
+    rm -rf /var/lib/apt/lists/* && \
+    sed -i "/\"\$PS1\"/d" /root/.bashrc
+ADD files/supervisor/supervisord.conf /etc/supervisor/supervisord.conf
 
-# Supervisord default config
-ADD files/supervisord.conf /etc/supervisor/supervisord.conf
+# Add scripts for compiling omni events from source and run them
+WORKDIR /tmp/build
+ADD files/build/base-deps-func.sh \
+    files/build/omnievents.sh \
+    ./
+RUN bash omnievents.sh && rm *
 
-# Install omni
-RUN yum install -y \
-    omniORB-servers \
-    omniEvents-server && \
-    yum -y clean all && \
-    \
-    echo "InitRef = EventService=corbaloc::127.0.0.1:11169/omniEvents" >> /etc/omniORB.cfg
-
-# IP address for omni services and an auto-configure script
-ADD files/omnicfg-updater.sh /root/omnicfg-updater.sh
+# IP address for omni services and an auto-configure script and omniORB.cfg
+ADD files/etc/omniORB.cfg /etc/omniORB.cfg
+ADD files/etc/omnicfg-updater.sh /root/omnicfg-updater.sh
 RUN chmod u+x /root/omnicfg-updater.sh && \
-    echo "/root/omnicfg-updater.sh" | tee -a /root/.bash_profile
+    echo "/root/omnicfg-updater.sh" | tee -a /root/.profile
 
 WORKDIR /root
 

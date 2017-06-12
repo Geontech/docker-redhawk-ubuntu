@@ -1,3 +1,4 @@
+#!/bin/bash
 # This file is protected by Copyright. Please refer to the COPYRIGHT file
 # distributed with this source distribution.
 #
@@ -16,20 +17,24 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program.  If not, see http://www.gnu.org/licenses/.
 #
+set -e 
 
-FROM geontech/redhawk-ubuntu-base:2.0.5
+# Set JAVA_HOME and run /etc/profile
+export JAVA_HOME=$(readlink -f "/usr/lib/jvm/default-java")
+. /etc/profile
 
-LABEL name="OmniORB Servers" \
-    description="Omni* Services Runner"
+# Source some helper functions
+source ./base-deps-func.sh
 
-# Create log directories and add supervisord config for omni.
-RUN mkdir -p /var/log/omniORB && \
-	mkdir -p /var/log/omniEvents
-ADD files/supervisor/supervisord-omniserver.conf /etc/supervisor.d/omniserver.conf
-ADD files/supervisor/kill_supervisor.py /usr/bin/kill_supervisor.py
-RUN chmod u+x /usr/bin/kill_supervisor.py
+# Install build dependencies.
+install_build_deps
 
-EXPOSE 2809 11169
+# Download the IDE
+INSTALL_DIR="${OSSIEHOME}/../ide/${RH_VERSION}"
+IDE_URL="https://github.com/RedhawkSDR/redhawk/releases/download/2.0.5/redhawk-ide-2.0.5.R201702021445-linux.gtk.x86_64.tar.gz"
+mkdir -p ${INSTALL_DIR} && pushd ${INSTALL_DIR}
+wget -qO- ${IDE_URL} | tar xvz
+ln -s $PWD/eclipse/eclipse /usr/bin/rhide
+popd
 
-WORKDIR /root
-CMD ["supervisord"]
+# DO NOT remove the build dependencies...

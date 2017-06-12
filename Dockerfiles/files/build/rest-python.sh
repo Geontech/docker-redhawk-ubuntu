@@ -1,3 +1,4 @@
+#!/bin/bash
 # This file is protected by Copyright. Please refer to the COPYRIGHT file
 # distributed with this source distribution.
 #
@@ -16,20 +17,45 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program.  If not, see http://www.gnu.org/licenses/.
 #
+set -e
 
-FROM geontech/redhawk-ubuntu-base:2.0.5
+# Set JAVA_HOME and run /etc/profile
+export JAVA_HOME=$(readlink -f "/usr/lib/jvm/default-java")
+. /etc/profile
 
-LABEL name="OmniORB Servers" \
-    description="Omni* Services Runner"
+RP_BUILD_DEPS="\
+	python-dev \
+	git \
+"
 
-# Create log directories and add supervisord config for omni.
-RUN mkdir -p /var/log/omniORB && \
-	mkdir -p /var/log/omniEvents
-ADD files/supervisor/supervisord-omniserver.conf /etc/supervisor.d/omniserver.conf
-ADD files/supervisor/kill_supervisor.py /usr/bin/kill_supervisor.py
-RUN chmod u+x /usr/bin/kill_supervisor.py
+RP_RUN_DEPS="\
+	python \
+"
 
-EXPOSE 2809 11169
+function install_deps() {
+	apt-get update && apt-get install \
+        -qy \
+        --no-install-recommends \
+        ${RP_BUILD_DEPS} \
+        ${RP_RUN_DEPS}
+    pip install virtualenv
+}
 
-WORKDIR /root
-CMD ["supervisord"]
+function remove_build_deps() {
+    apt-get purge -qy ${RP_BUILD_DEPS}
+    apt-get autoremove -qy
+    rm -rf /var/lib/apt/lists/*
+}
+
+# Install dependencies
+install_deps
+
+# Get rest-python, run the setup script
+TARGET="rest-python"
+git clone -b ${REST_PYTHON_BRANCH} ${REST_PYTHON} ${TARGET}
+pushd ${TARGET}
+./setup.sh install && pip install -r requirements.txt
+popd
+
+# Remove dependencies
+remove_build_deps

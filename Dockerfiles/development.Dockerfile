@@ -17,27 +17,43 @@
 # along with this program.  If not, see http://www.gnu.org/licenses/.
 #
 
-FROM geontech/redhawk-runtime:2.0.5
+FROM geontech/redhawk-ubuntu-runtime:2.0.5
 LABEL name="REDHAWK IDE Environment" \
-	description="REDHAWK Integrated Development Environment Runner" \
-	maintainer="Thomas Goodwin <btgoodwin@geontech.com>"
-
-# Install development environment
-RUN yum groupinstall -y "REDHAWK Development" && \
-	yum install -y \
-		PackageKit-gtk-module \
-		libcanberra-gtk2 \
-		sudo && \
-	yum autoremove -y && \
-	yum clean all -y
-
-ADD files/rhide-init.sh /opt/rhide-init.sh
-RUN chmod a+x /opt/rhide-init.sh
+    description="REDHAWK Integrated Development Environment Runner" \
+    maintainer="Thomas Goodwin <btgoodwin@geontech.com>"
 
 ENV RHUSER_ID 54321
 
+# Install runtime deps
+RUN apt-get update && \
+    apt-get install -qy --no-install-recommends \
+    	dbus \
+        packagekit-gtk3-module \
+        libcanberra-gtk-module && \
+    rm -rf /var/lib/apt/lists/*
+
+# Add dependencies scripts and builder script.
+# Run the builder.
+WORKDIR /tmp/build
+ADD files/build/base-deps-func.sh \
+    files/build/redhawk-source-repo-func.sh \
+    files/build/build-sh-process-func.sh \
+    files/build/standard-sdrroot.sh \
+    files/build/ide.sh \
+    ./
+RUN bash standard-sdrroot.sh && \
+    bash ide.sh && \
+    rm *
+
+# Init script
+ADD files/init/rhide-init.sh /opt/rhide-init.sh
+RUN chmod a+x /opt/rhide-init.sh
+
+# Exposed volumes
 VOLUME /var/redhawk/sdr
 VOLUME /home/user/workspace
+
+WORKDIR /root
 
 # Run the RHIDE init script
 CMD ["/bin/bash", "-l", "-c", "/opt/rhide-init.sh"]

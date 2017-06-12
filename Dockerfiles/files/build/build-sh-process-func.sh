@@ -1,3 +1,4 @@
+#!/bin/bash
 # This file is protected by Copyright. Please refer to the COPYRIGHT file
 # distributed with this source distribution.
 #
@@ -16,20 +17,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program.  If not, see http://www.gnu.org/licenses/.
 #
-
-FROM geontech/redhawk-ubuntu-base:2.0.5
-
-LABEL name="OmniORB Servers" \
-    description="Omni* Services Runner"
-
-# Create log directories and add supervisord config for omni.
-RUN mkdir -p /var/log/omniORB && \
-	mkdir -p /var/log/omniEvents
-ADD files/supervisor/supervisord-omniserver.conf /etc/supervisor.d/omniserver.conf
-ADD files/supervisor/kill_supervisor.py /usr/bin/kill_supervisor.py
-RUN chmod u+x /usr/bin/kill_supervisor.py
-
-EXPOSE 2809 11169
-
-WORKDIR /root
-CMD ["supervisord"]
+set -e 
+function build_sh_process() {
+	ldconfig
+	pushd $1
+	sed -Ei "s/(\.\/configure)/\1 CXXFLAGS=\"-fpermissive\" /g" build.sh
+	./build.sh && ./build.sh install
+	popd
+}

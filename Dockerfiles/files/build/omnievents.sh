@@ -1,3 +1,4 @@
+#!/bin/bash
 # This file is protected by Copyright. Please refer to the COPYRIGHT file
 # distributed with this source distribution.
 #
@@ -16,20 +17,23 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program.  If not, see http://www.gnu.org/licenses/.
 #
+set -e
 
-FROM geontech/redhawk-ubuntu-base:2.0.5
+source ./base-deps-func.sh
 
-LABEL name="OmniORB Servers" \
-    description="Omni* Services Runner"
+install_build_deps
 
-# Create log directories and add supervisord config for omni.
-RUN mkdir -p /var/log/omniORB && \
-	mkdir -p /var/log/omniEvents
-ADD files/supervisor/supervisord-omniserver.conf /etc/supervisor.d/omniserver.conf
-ADD files/supervisor/kill_supervisor.py /usr/bin/kill_supervisor.py
-RUN chmod u+x /usr/bin/kill_supervisor.py
+# Get omniEvents
+mkdir omniEvents && pushd omniEvents
+wget https://github.com/RedhawkSDR/omniEvents/archive/2.7.1.tar.gz
+tar xf 2.7.1.tar.gz --strip 1 && rm -f 2.7.1.tar.gz
 
-EXPOSE 2809 11169
+# Compile and install into where the packaged version would normally be.
+./reconf
+./configure --prefix=/usr
+make && make install
 
-WORKDIR /root
-CMD ["supervisord"]
+# Remove the build area
+popd && rm -rf omniEvents
+
+remove_build_deps

@@ -17,21 +17,49 @@
 # along with this program.  If not, see http://www.gnu.org/licenses/.
 #
 
-FROM geontech/redhawk-base:2.0.5
+FROM geontech/redhawk-ubuntu-base:2.0.5
 LABEL name="REDHAWK SDR Runtime" \
-    description="REDHAWK SDR Runtime dependencies"
+    description="REDHAWK SDR Runtime dependencies (core framework, etc.)"
 
-# Install REDHAWK Runtime, no GPP, domain, or boot scripts.
-RUN yum groupinstall -y "REDHAWK Runtime" && \
-	cp /etc/profile.d/redhawk-sdrroot.sh /etc/profile.d/redhawk-sdrroot.sh.bak && \
-	yum remove -y \
-		GPP \
-		GPP-profile \
-		omniEvents-bootscripts \
-		redhawk-sdrroot-dev-mgr \
-		redhawk-sdrroot-dom-mgr \
-		redhawk-sdrroot-dom-profile && \
-	yum clean all -y && \
-	mv /etc/profile.d/redhawk-sdrroot.sh.bak /etc/profile.d/redhawk-sdrroot.sh
+# Runtime dependencis
+RUN apt-get update && \
+	apt-get install -qy --no-install-recommends \
+        libexpat1 \
+        libuuid1 \
+        uuid \
+        libfftw3-3 \
+        liblog4cxx10v5 \
+        python-numpy \
+        libboost-date-time1.58.0 \
+        libboost-filesystem1.58.0 \
+        libboost-regex1.58.0 \
+        libboost-serialization1.58.0 \
+        libboost-system1.58.0 \
+        libboost-thread1.58.0 \
+        libboost-iostreams1.58.0 \
+        libapr1 \
+        libaprutil1 \
+        python-omniorb \
+        libcos4-1 \
+        default-jdk && \
+    rm -rf /var/lib/apt/lists/*
+
+# Add build dependencies and builder script for core framework, etc.
+WORKDIR /tmp/build
+ADD files/build/base-deps-func.sh \
+	files/build/redhawk-source-repo-func.sh \
+	files/build/core-framework.sh \
+	./
+RUN bash core-framework.sh && rm *
+RUN echo "source /etc/profile.d/redhawk.sh" >> /etc/bash.bashrc && \
+    echo "source /etc/profile.d/redhawk-sdrroot.sh" >> /etc/bash.bashrc
+
+# Add the REDHAWK user and group, own SDRROOT
+RUN /usr/sbin/useradd -M -r -s /sbin/nologin \
+    -c "REDHAWK System Account" redhawk > /dev/null && \
+    chown -R redhawk:redhawk /var/redhawk/sdr && \
+    chmod -R g+s /var/redhawk/sdr
+
+WORKDIR /root
 
 CMD ["/bin/bash", "-l"]

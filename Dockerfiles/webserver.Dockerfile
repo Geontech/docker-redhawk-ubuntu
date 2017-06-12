@@ -17,7 +17,7 @@
 # along with this program.  If not, see http://www.gnu.org/licenses/.
 #
 
-FROM geontech/redhawk-runtime
+FROM geontech/redhawk-ubuntu-runtime
 LABEL name="REST-Python Web Server" \
     description="Geon's Fork of REST-Python" \
     maintainer="Thomas Goodwin <btgoodwin@geontech.com>"
@@ -35,34 +35,20 @@ ENV REST_PYTHON_PORT=${REST_PYTHON_PORT}
 # Expose the configured default port.
 EXPOSE ${REST_PYTHON_PORT}
 
-RUN yum install -y \
-        git \
-        gcc \
-        python-dev \
-        curl \
-        python-virtualenv && \
-    yum clean all -y
-
-# Install and update pip
-RUN curl https://bootstrap.pypa.io/get-pip.py | python && \
-    pip install -U pip
-
-WORKDIR /opt
-
 # Install the rest-python server
-RUN git clone -b ${REST_PYTHON_BRANCH} ${REST_PYTHON} && \
-    cd rest-python && \
-    ./setup.sh install && \
-    pip install -r requirements.txt
+WORKDIR /opt
+ADD files/build/rest-python.sh ./
+RUN bash rest-python.sh && rm /opt/rest-python.sh
 
 # Mount point for end-user apps
 VOLUME /opt/rest-python/apps
 
+# Move to rest-python
 WORKDIR /opt/rest-python
 
 # Supervisord script and "exit" event listener
-ADD files/supervisor-rest-python /etc/supervisor.d/rest-python.conf
-ADD files/kill_supervisor.py /usr/bin/kill_supervisor.py
+ADD files/supervisor/supervisord-rest-python.conf /etc/supervisor.d/rest-python.conf
+ADD files/supervisor/kill_supervisor.py /usr/bin/kill_supervisor.py
 RUN chmod u+x /usr/bin/kill_supervisor.py
 
-CMD ["/usr/bin/supervisord"]
+CMD ["supervisord"]

@@ -17,58 +17,39 @@
 # along with this program.  If not, see http://www.gnu.org/licenses/.
 #
 
-FROM geontech/redhawk-runtime:2.0.5
+FROM geontech/redhawk-ubuntu-runtime:2.0.5
 LABEL name="Geon Technology's BU353S4 GPS Device" \
     description="Geon's BU353S4" \
     maintainer="Thomas Goodwin <btgoodwin@geontech.com>"
-
-# Yum necessities, download nmealib and bu353s4, compile each, remove unused things
-RUN yum install -y \
-		redhawk-sdrroot-dev-mgr \
-		redhawk-devel \
-		libusb1-devel \
-        autoconf \
-        automake \
-        git \
-        unzip && \
-    \
-	wget http://downloads.sourceforge.net/project/nmea/NmeaLib/nmea-0.5.x/nmealib-0.5.3.zip && \
-	unzip nmealib-0.5.3.zip && \
-	pushd nmealib && \
-	make && cp -r lib include /usr/local && \
-	popd && rm -rf nmealib nmealib-0.5.3.zip && \
-	\
-	git clone git://github.com/GeonTech/BU353S4.git && \
-	pushd BU353S4 && \
-	source /etc/profile.d/redhawk.sh && \
-	source /etc/profile.d/redhawk-sdrroot.sh && \
-	./build.sh && ./build.sh install && \
-	popd && rm -rf BU353S4 && \
-	\
-	yum autoremove -y \
-		redhawk-devel \
-		libusb1-devel \
-        autoconf \
-        automake \
-        git \
-        unzip && \
-    yum clean all -y
 
 ENV DOMAINNAME ""
 ENV GPS_PORT   ""
 ENV NODENAME   "" 
 
-# Set config file to executable
-RUN chmod a+x /var/redhawk/sdr/dev/devices/BU353S4/nodeconfig.py
+RUN apt-get update && \
+    apt-get install -qy --no-install-recommends \
+        libusb-1.0.0 && \
+    rm -rf /var/lib/apt/lists/*
+
+# Add dependencies scripts and builder script.
+# Run the builder.
+WORKDIR /tmp/build
+ADD files/build/base-deps-func.sh \
+    files/build/redhawk-source-repo-func.sh \
+    files/build/build-sh-process-func.sh \
+    files/build/bu353s4.sh \
+    ./
+RUN bash bu353s4.sh && rm *
 
 # Add script for configuring the node
-ADD files/bu353s4-node-init.sh /root/bu353s4-node-init.sh
+ADD files/init/bu353s4-node-init.sh /root/bu353s4-node-init.sh
 RUN chmod u+x /root/bu353s4-node-init.sh && \
-	echo "/root/bu353s4-node-init.sh" | tee -a /root/.bashrc
+    echo "/root/bu353s4-node-init.sh" | tee -a /root/.bashrc
 
 # BU353S4 Supervisord script and 'exit' event listener
-ADD files/supervisord-bu353s4.conf /etc/supervisor.d/bu353s4.conf
-ADD files/kill_supervisor.py /usr/bin/kill_supervisor.py
+ADD files/supervisor/supervisord-bu353s4.conf /etc/supervisor.d/bu353s4.conf
+ADD files/supervisor/kill_supervisor.py /usr/bin/kill_supervisor.py
 RUN chmod ug+x /usr/bin/kill_supervisor.py
 
-CMD ["/usr/bin/supervisord"]
+WORKDIR /root
+CMD ["supervisord"]
