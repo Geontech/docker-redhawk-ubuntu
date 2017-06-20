@@ -58,7 +58,7 @@ RUN echo "source /etc/profile.d/redhawk.sh" >> /etc/bash.bashrc && \
 RUN /usr/sbin/useradd -M -r -s /sbin/nologin \
     -c "REDHAWK System Account" redhawk > /dev/null && \
     chown -R redhawk:redhawk /var/redhawk/sdr && \
-    chmod -R g+s /var/redhawk/sdr
+    chmod -R g+ws /var/redhawk/sdr
 
 WORKDIR /root
 
