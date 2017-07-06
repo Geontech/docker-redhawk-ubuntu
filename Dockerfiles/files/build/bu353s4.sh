@@ -48,3 +48,7 @@ git clone -b 1.0.0 git://github.com/GeonTech/BU353S4.git $TARGET && \
 
 # Remove build dependencies
 remove_build_deps
+
+# Re-own SDRROOT
+chown -R redhawk:redhawk $SDRROOT
+chmod -R g+ws $SDRROOT

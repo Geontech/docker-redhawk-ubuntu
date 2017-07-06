@@ -38,3 +38,7 @@ ln -s $PWD/eclipse/eclipse /usr/bin/rhide
 popd
 
 # DO NOT remove the build dependencies...
+
+# Re-own SDRROOT
+chown -R redhawk:redhawk $SDRROOT
+chmod -R g+ws $SDRROOT

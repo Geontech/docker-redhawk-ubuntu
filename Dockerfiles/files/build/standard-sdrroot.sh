@@ -52,3 +52,7 @@ remove_repo
 
 # Remove build dependencies
 remove_build_deps
+
+# Re-own SDRROOT
+chown -R redhawk:redhawk $SDRROOT
+chmod -R g+ws $SDRROOT
