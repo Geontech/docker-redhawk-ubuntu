@@ -30,6 +30,7 @@ RUN apt-get update && \
         libfftw3-3 \
         liblog4cxx10v5 \
         python-numpy \
+        python-jinja2 \
         libboost-date-time1.58.0 \
         libboost-filesystem1.58.0 \
         libboost-regex1.58.0 \

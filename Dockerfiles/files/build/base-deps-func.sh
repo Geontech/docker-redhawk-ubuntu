@@ -30,7 +30,6 @@ BUILD_DEPS="\
     libfftw3-dev \
     liblog4cxx-dev \
     python-dev \
-    python-jinja2 \
     pyqt4-dev-tools \
     libboost-date-time-dev \
     libboost-filesystem-dev \
