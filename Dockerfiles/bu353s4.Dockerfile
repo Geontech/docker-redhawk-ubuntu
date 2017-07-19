@@ -17,10 +17,9 @@
 # along with this program.  If not, see http://www.gnu.org/licenses/.
 #
 
-FROM geontech/redhawk-ubuntu-runtime:2.0.5
+FROM geontech/redhawk-ubuntu-runtime:2.0.6
 LABEL name="Geon Technology's BU353S4 GPS Device" \
-    description="Geon's BU353S4" \
-    maintainer="Thomas Goodwin <btgoodwin@geontech.com>"
+    description="Geon's BU353S4"
 
 ENV DOMAINNAME ""
 ENV GPS_PORT   ""

@@ -17,7 +17,7 @@
 # along with this program.  If not, see http://www.gnu.org/licenses/.
 #
 
-FROM geontech/redhawk-ubuntu-base:2.0.5
+FROM geontech/redhawk-ubuntu-base:2.0.6
 
 LABEL name="OmniORB Servers" \
     description="Omni* Services Runner"

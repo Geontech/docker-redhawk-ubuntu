@@ -17,10 +17,9 @@
 # along with this program.  If not, see http://www.gnu.org/licenses/.
 #
 
-FROM geontech/redhawk-ubuntu-runtime:2.0.5
+FROM geontech/redhawk-ubuntu-runtime:2.0.6
 LABEL name="REDHAWK IDE Environment" \
-    description="REDHAWK Integrated Development Environment Runner" \
-    maintainer="Thomas Goodwin <btgoodwin@geontech.com>"
+    description="REDHAWK Integrated Development Environment Runner"
 
 ENV RHUSER_ID 54321
 
@@ -39,6 +38,7 @@ ADD files/build/base-deps-func.sh \
     files/build/redhawk-source-repo-func.sh \
     files/build/build-sh-process-func.sh \
     files/build/standard-sdrroot.sh \
+    files/build/ide-fetcher.py \
     files/build/ide.sh \
     ./
 RUN bash standard-sdrroot.sh && \

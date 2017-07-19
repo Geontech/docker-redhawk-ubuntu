@@ -17,10 +17,9 @@
 # along with this program.  If not, see http://www.gnu.org/licenses/.
 #
 
-FROM geontech/redhawk-ubuntu-runtime
+FROM geontech/redhawk-ubuntu-runtime:2.0.6
 LABEL name="REST-Python Web Server" \
-    description="Geon's Fork of REST-Python" \
-    maintainer="Thomas Goodwin <btgoodwin@geontech.com>"
+    description="Geon's Fork of REST-Python"
 
 # Build-time configurable variables
 ARG REST_PYTHON=http://github.com/GeonTech/rest-python.git

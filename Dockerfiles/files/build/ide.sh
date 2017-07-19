@@ -31,9 +31,18 @@ install_build_deps
 
 # Download the IDE
 INSTALL_DIR="${OSSIEHOME}/../ide/${RH_VERSION}"
-IDE_URL="https://github.com/RedhawkSDR/redhawk/releases/download/2.0.5/redhawk-ide-2.0.5.R201702021445-linux.gtk.x86_64.tar.gz"
 mkdir -p ${INSTALL_DIR} && pushd ${INSTALL_DIR}
-wget -qO- ${IDE_URL} | tar xvz
+IDE_ASSET="$(python /tmp/build/ide-fetcher.py ${RH_VERSION})"
+if ! [ $? -eq  0 ]; then
+    echo "Failed to download IDE" 1>&2
+    exit 1
+fi
+
+# Unpack the asset
+echo "Unpacking: ${IDE_ASSET}"
+ls -la ${IDE_ASSET}
+tar xvzf ${IDE_ASSET}
+rm -rf ${IDE_ASSET}
 ln -s $PWD/eclipse/eclipse /usr/bin/rhide
 popd
 

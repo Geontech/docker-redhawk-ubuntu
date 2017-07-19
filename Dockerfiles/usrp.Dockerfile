@@ -17,10 +17,9 @@
 # along with this program.  If not, see http://www.gnu.org/licenses/.
 #
 
-FROM geontech/redhawk-ubuntu-runtime:2.0.5
+FROM geontech/redhawk-ubuntu-runtime:2.0.6
 LABEL name="REDHAWK SDR USRP_UHD Device" \
-    description="REDHAWK USRP_UHD w/ updated UHD driver version (3.10)" \
-    maintainer="Thomas Goodwin <btgoodwin@geontech.com>"
+    description="REDHAWK USRP_UHD w/ updated UHD driver version (3.10)"
 
 ENV DOMAINNAME      ""
 ENV NODENAME        ""
