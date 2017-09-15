@@ -27,6 +27,7 @@ ENV GPPNAME    ""
 
 # Add dependencies scripts and builder script.
 # Run the builder.
+RUN apt-get install -y fftw3
 WORKDIR /tmp/build
 ADD files/build/base-deps-func.sh \
 	files/build/redhawk-source-repo-func.sh \
