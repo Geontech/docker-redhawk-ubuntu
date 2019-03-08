@@ -32,10 +32,6 @@ LABEL name="REDHAWK SDR Base Image" \
 RUN apt-get update && \
     apt-get install -qy --no-install-recommends \
     python \
-    omniorb-nameserver \
-    omniidl \
-    omniidl-python \
-    omniorb-idl \
     python-pip \
     libboost-system1.58.0 \
     libboost-thread1.58.0 \
@@ -43,7 +39,7 @@ RUN apt-get update && \
     pip install --upgrade \
         pip \
         setuptools && \
-    pip install --upgrade \
+    /usr/local/bin/pip install --upgrade \
         supervisor && \
     mkdir -p \
         /etc/supervisor.d    \
@@ -57,8 +53,13 @@ ADD files/supervisor/supervisord.conf /etc/supervisor/supervisord.conf
 WORKDIR /tmp/build
 ADD files/build/base-deps-func.sh \
     files/build/omnievents.sh \
+    files/build/omniorb.sh \
+    files/build/omniorbpy.sh \
     ./
-RUN bash omnievents.sh && rm *
+RUN bash omniorb.sh && \
+    bash omniorbpy.sh && \
+    bash omnievents.sh && \
+    rm -rf *
 
 # IP address for omni services and an auto-configure script and omniORB.cfg
 ADD files/etc/omniORB.cfg /etc/omniORB.cfg

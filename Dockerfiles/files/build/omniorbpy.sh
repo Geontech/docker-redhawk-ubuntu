@@ -24,16 +24,15 @@ source ./base-deps-func.sh
 install_build_deps
 
 # Get omniEvents
-mkdir omniEvents && pushd omniEvents
-wget https://github.com/RedhawkSDR/omniEvents/archive/2.8.1.tar.gz
-tar xf 2.8.1.tar.gz --strip 1 && rm -f 2.8.1.tar.gz
+mkdir omniORBpy && pushd omniORBpy
+wget http://downloads.sourceforge.net/omniorb/omniORBpy-4.2.3.tar.bz2
+tar xf omniORBpy-4.2.3.tar.bz2 --strip 1 && rm -f omniORBpy-4.2.3.tar.bz2
 
 # Compile and install into where the packaged version would normally be.
-./reconf
 ./configure --prefix=/usr
 make && make install
 
 # Remove the build area
-popd && rm -rf omniEvents
+popd && rm -rf omniORBpy
 
 remove_build_deps

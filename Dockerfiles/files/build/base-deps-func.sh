@@ -41,9 +41,10 @@ BUILD_DEPS="\
     libxerces-c-dev \
     libapr1-dev \
     libaprutil1-dev \
-    libomniorb4-dev \
-    libcos4-dev \
-    xsdcxx"
+    xsdcxx \
+    pkg-config \
+    libsqlite3-dev \
+    libcppunit-dev"
 
 function install_build_deps() {
     apt-get update && apt-get install -qy --no-install-recommends ${BUILD_DEPS}
