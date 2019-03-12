@@ -32,3 +32,75 @@ function remove_repo () {
         rm -rf redhawk
     fi
 }
+
+function patch_cf() {
+    # Patch Resource_impl.h
+    cat<<EOF | tee ./Resource_impl-h.patch
+diff --git a/redhawk/src/base/include/ossie/Resource_impl.h b/redhawk/src/base/include/ossie/Resource_impl.h
+index 3a62e6f..dca67bc 100644
+--- a/redhawk/src/base/include/ossie/Resource_impl.h
++++ b/redhawk/src/base/include/ossie/Resource_impl.h
+@@ -24,6 +24,7 @@
+
+ #include <string>
+ #include <map>
++#include <boost/scoped_ptr.hpp>
+ #include "Logging_impl.h"
+ #include "Port_impl.h"
+ #include "LifeCycle_impl.h"
+EOF
+    patch ./redhawk/src/base/include/ossie/Resource_impl.h Resource_impl-h.patch
+
+    # Patch shm/Allocator.cpp
+    cat<<EOF | tee ./Allocator-cpp.patch
+diff --git a/redhawk/src/base/framework/shm/Allocator.cpp b/redhawk/src/base/framework/shm/Allocator.cpp
+index f467de0..0c83edb 100644
+--- a/redhawk/src/base/framework/shm/Allocator.cpp
++++ b/redhawk/src/base/framework/shm/Allocator.cpp
+@@ -26,6 +26,7 @@
+ #include <ossie/BufferManager.h>
+
+ #include <boost/thread.hpp>
++#include <boost/scoped_ptr.hpp>
+
+ #include "Block.h"
+
+EOF
+    patch ./redhawk/src/base/framework/shm/Allocator.cpp Allocator-cpp.patch
+
+    # Patch ComponentHost/Makefile.am
+    cat<<EOF | tee ./CH-Makefile-am.patch
+diff --git a/redhawk/src/control/sdr/ComponentHost/Makefile.am b/redhawk/src/control/sdr/ComponentHost/Makefile.am
+index 91bd9a6..b5bc24b 100644
+--- a/redhawk/src/control/sdr/ComponentHost/Makefile.am
++++ b/redhawk/src/control/sdr/ComponentHost/Makefile.am
+@@ -27,7 +27,7 @@ dist_xml_DATA = ComponentHost.scd.xml ComponentHost.prf.xml ComponentHost.spd.xm
+ ComponentHost_SOURCES = ComponentHost.cpp ModuleLoader.cpp main.cpp
+
+ ComponentHost_LDADD = \$(top_builddir)/base/framework/libossiecf.la \$(top_builddir)/base/framework/idl/libossieidl.la
+-ComponentHost_LDADD += \$(BOOST_LDFLAGS) \$(BOOST_THREAD_LIB) \$(BOOST_REGEX_LIB) \$(BOOST_SYSTEM_LIB)
++ComponentHost_LDADD += \$(BOOST_LDFLAGS) \$(BOOST_THREAD_LIB) \$(BOOST_REGEX_LIB) \$(BOOST_SYSTEM_LIB) \$(BOOST_FILESYSTEM_LIB) -lomniORB4 -lomnithread -ldl
+ ComponentHost_CPPFLAGS = -I\$(top_srcdir)/base/include \$(BOOST_CPPFLAGS)
+ ComponentHost_CXXFLAGS = -Wall
+
+EOF
+    patch ./redhawk/src/control/sdr/ComponentHost/Makefile.am CH-Makefile-am.patch
+
+    # Patch svc_fn_error_cpp Makefile.am
+    cat<<EOF | tee ./svc_fn_error_cpp-Makefile-am.patch
+diff --git a/redhawk/src/testing/sdr/dom/components/svc_fn_error_cpp/cpp/Makefile.am b/redhawk/src/testing/sdr/dom/components/svc_fn_error_cpp/cpp/Makefile.am
+index 50213e7..c1845b7 100644
+--- a/redhawk/src/testing/sdr/dom/components/svc_fn_error_cpp/cpp/Makefile.am
++++ b/redhawk/src/testing/sdr/dom/components/svc_fn_error_cpp/cpp/Makefile.am
+@@ -28,7 +28,7 @@ noinst_PROGRAMS = svc_fn_error_cpp
+ # you wish to manually control these options.
+ include \$(srcdir)/Makefile.am.ide
+ svc_fn_error_cpp_SOURCES = \$(redhawk_SOURCES_auto)
+-svc_fn_error_cpp_LDADD = \$(CFDIR)/framework/libossiecf.la \$(CFDIR)/framework/idl/libossieidl.la \$(SOFTPKG_LIBS) \$(PROJECTDEPS_LIBS) \$(BOOST_LDFLAGS) \$(BOOST_THREAD_LIB) \$(BOOST_REGEX_LIB) \$(BOOST_SYSTEM_LIB) \$(INTERFACEDEPS_LIBS) \$(redhawk_LDADD_auto)
++svc_fn_error_cpp_LDADD = \$(CFDIR)/framework/libossiecf.la \$(CFDIR)/framework/idl/libossieidl.la \$(SOFTPKG_LIBS) \$(PROJECTDEPS_LIBS) \$(BOOST_LDFLAGS) \$(BOOST_THREAD_LIB) \$(BOOST_REGEX_LIB) \$(BOOST_SYSTEM_LIB) \$(INTERFACEDEPS_LIBS) \$(redhawk_LDADD_auto) -lomniORB4 -lomnithread
+ svc_fn_error_cpp_CXXFLAGS = -Wall \$(SOFTPKG_CFLAGS) \$(PROJECTDEPS_CFLAGS) \$(BOOST_CPPFLAGS) \$(INTERFACEDEPS_CFLAGS) \$(redhawk_INCLUDES_auto)
+ svc_fn_error_cpp_LDFLAGS = -Wall \$(redhawk_LDFLAGS_auto)
+
+EOF
+    patch ./redhawk/src/testing/sdr/dom/components/svc_fn_error_cpp/cpp/Makefile.am svc_fn_error_cpp-Makefile-am.patch
+}

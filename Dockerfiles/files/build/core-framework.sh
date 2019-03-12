@@ -41,6 +41,9 @@ install_repo
 # Compile the core-framework (except GPP)
 pushd redhawk-core-framework
 
+# patch core-framework
+patch_cf
+
 # redhawk and install the /etc helpers, refresh the environment
 std_process redhawk/src
 cp -r /usr/local/redhawk/core/etc/* /etc
