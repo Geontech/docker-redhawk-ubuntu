@@ -40,8 +40,6 @@ RUN apt-get update && \
         libboost-iostreams1.58.0 \
         libapr1 \
         libaprutil1 \
-        python-omniorb \
-        libcos4-1 \
         default-jdk && \
     rm -rf /var/lib/apt/lists/*
 
