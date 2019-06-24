@@ -103,4 +103,22 @@ index 50213e7..c1845b7 100644
 
 EOF
     patch ./redhawk/src/testing/sdr/dom/components/svc_fn_error_cpp/cpp/Makefile.am svc_fn_error_cpp-Makefile-am.patch
+
+    # Patch codegen
+    cat<<EOF | tee ./utils.py.patch
+diff --git a/redhawk-codegen/redhawk/codegen/utils.py b/redhawk-codegen/redhawk/codegen/utils.py
+index 9ec6432..b99bb7e 100644
+--- a/redhawk-codegen/redhawk/codegen/utils.py
++++ b/redhawk-codegen/redhawk/codegen/utils.py
+@@ -55,7 +55,7 @@ def fileMD5(filename):
+     # secure; the "usedforsecurity" flag assures the library that it's not used
+     # in that way, since in this case it's just a hash for tracking when a file
+     # has changed. 
+-    m = md5(usedforsecurity=False)
++    m = md5()
+     for line in open(filename, 'r'):
+         m.update(line)
+     return m.hexdigest()
+EOF
+    patch ./redhawk-codegen/redhawk/codegen/utils.py utils.py.patch
 }
