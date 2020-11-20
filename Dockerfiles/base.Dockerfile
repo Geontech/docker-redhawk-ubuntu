@@ -40,11 +40,9 @@ RUN apt-get update && \
     libboost-system1.58.0 \
     libboost-thread1.58.0 \
     && \
-    pip install --upgrade \
-        pip \
-        setuptools && \
-    pip install --upgrade \
-        supervisor && \
+    pip install --upgrade pip==9.0.3 && \
+    pip install --upgrade setuptools && \
+    pip install --upgrade supervisor && \
     mkdir -p \
         /etc/supervisor.d    \
         /etc/supervisor      \
